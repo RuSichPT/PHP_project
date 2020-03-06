@@ -33,3 +33,40 @@ echo convertString("This is a test", "a")
 <?php
 echo convertString("This is a test", "is")
 ?>
+<br/>
+<?php
+$data[] = array('volume' => 67, 'edition' => 2);
+$data[] = array('volume' => 86, 'edition' => 1);
+$data[] = array('volume' => 85, 'edition' => 5);
+
+$data1[] = array('volume' => 98, 'edition' => 2);
+$data1[] = array('volume' => 86, );
+$data1[] = array('volume' => 67, 'edition' => 7);
+echo '<pre>';
+print_r($data);
+print_r($data1);
+echo '</pre>';
+function mySortForKey($a, $b)
+{	
+	foreach ($a as $key => $value) // Проверка существования ключа  $b
+	{
+		if (!array_key_exists($b,$a[$key]))
+		{
+			throw new Exception("Индекс не правильного массива: ".$key);
+		}		
+	}
+	$ar_tmp=array_column($a,$b);
+	array_multisort($ar_tmp,$a);
+	return $a;
+}
+try
+{	
+	echo '<pre>';
+	print_r(mySortForKey($data,'edition'));
+	print_r(mySortForKey($data1,'edition'));
+	echo '</pre>';
+}catch(Exception $e) 
+{
+	echo $e->getMessage();
+}
+?>
