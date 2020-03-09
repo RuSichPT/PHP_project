@@ -210,7 +210,7 @@ importXml($p);
 ?>
 <br/>
 <?php
-$id_cat = 2;
+$id_cat = 1;
 $p = "D:\Program Files\OSPanel\domains\\test.ru\PHP_project";
 function exportXml($a, $b)
 {
@@ -256,6 +256,7 @@ function exportXml($a, $b)
 			$xml_Цена->appendChild($xml->createTextNode($price[2]));	
 		}		
 		$xml_Свойства = $xml_Товар->appendChild($xml->createElement("Свойства"));
+		// Заполняем свойства товара
 		$str_prop = explode(" ",$prop[1]);// разбиваем строку свойства на массив
 		unset($str_prop[count($str_prop)-1]); //удаляем в конце ''		
 		$i=0;$j=1;
@@ -264,8 +265,11 @@ function exportXml($a, $b)
 			if($key == $i*3)
 			{
 				$xml_Св = $xml_Свойства->appendChild($xml->createElement($value));				
-				$i++;				
-				//$xml_Св_2->setAttribute("ЕдИзм","%");
+				$i++;
+				if ($value=="Белизна")
+				{
+					$xml_Св->setAttribute("ЕдИзм","%");	
+				} 				
 			}
 			if($key == $j*3-1)
 			{				
@@ -273,6 +277,7 @@ function exportXml($a, $b)
 				$j++;
 			}
 		}
+		//
 		$xml_Разделы = $xml_Товар->appendChild($xml->createElement("Разделы"));
 		$xml_Раздел = $xml_Разделы->appendChild($xml->createElement("Раздел"));
 		$xml_Раздел->appendChild($xml->createTextNode($Table_cat[(int)$b-1][1]));
