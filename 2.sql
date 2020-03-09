@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Мар 08 2020 г., 12:45
+-- Время создания: Мар 09 2020 г., 11:15
 -- Версия сервера: 5.7.25-log
 -- Версия PHP: 7.1.32
 
@@ -96,8 +96,8 @@ ALTER TABLE `a_product`
 -- Индексы таблицы `a_property`
 --
 ALTER TABLE `a_property`
-  ADD PRIMARY KEY (`Товар`),
-  ADD KEY `id_cat` (`id_cat`) USING BTREE;
+  ADD KEY `id_cat` (`id_cat`) USING BTREE,
+  ADD KEY `Товар` (`Товар`);
 
 --
 -- AUTO_INCREMENT для сохранённых таблиц

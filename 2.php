@@ -138,8 +138,7 @@ function importXml($a)
 	foreach ($Продукт as $key => $attribut)
 	{
 		$Код = $attribut["Код"];		
-		$Название = "'".$attribut["Название"]."'";
-		$Раздел = "'".$attribut["Раздел"][0]."'";		
+		$Название = "'".$attribut["Название"]."'";			
 		//Таблица Продукты
 		$sql_proverka = "SELECT * FROM `a_product` WHERE `Код` = $Код;";// SQL запрос на проверку наличия в БД
 		$sql_rez_prov = $mysqli->query($sql_proverka);	
@@ -153,6 +152,7 @@ function importXml($a)
 		}
 		//
 		//Таблица Свойства
+		// Формируем текст свойства
 		$Значение_СВ = "";
 		foreach ($attribut["Свойства"] as $key_at=> $value)
 		{					
@@ -168,15 +168,39 @@ function importXml($a)
 			}			
 		}
 		$Значение_СВ = "'".$Значение_СВ."'";
-		$sql_id_cat = "SELECT `id` FROM `a_category` WHERE `Название` = $Раздел;";			
-		$sql_rez = $mysqli->query($sql_id_cat);		
-		$id_cat = $sql_rez->fetch_assoc()["id"];		
-		$sql_prop .= "INSERT INTO `a_property` (`Товар`,`Значение свойства`,`id_cat`) VALUES ($Название,$Значение_СВ,$id_cat);";
+		// Запрос sql
+		foreach ($attribut["Раздел"] as $key => $value)
+		{			
+			$Раздел = "'".$value."'";
+			$sql_id_cat = "SELECT `id` FROM `a_category` WHERE `Название` = $Раздел;";			
+			$sql_rez = $mysqli->query($sql_id_cat);
+			$id_cat = $sql_rez->fetch_assoc()["id"];
+			$sql_proverka_prop = "SELECT * FROM `a_property` WHERE `Товар` = $Название and			`id_cat` =  $id_cat ;";// SQL запрос на проверку наличия в БД			
+			$sql_rez_prov_prop = $mysqli->query($sql_proverka_prop);	
+			if ($sql_rez_prov_prop->num_rows==0)
+			{	
+				$sql_prop .= "INSERT INTO `a_property` (`Товар`,`Значение свойства`,`id_cat`) VALUES ($Название,$Значение_СВ,$id_cat);";
+			}else
+			{
+				echo "Товар с таким свойством = $Значение_СВ и категорией = $id_cat в БД существует \n";
+			}						
+
+		}
+		//var_dump($sql_prop);
 		//Таблица Цена		
 		foreach ($attribut["Цена"]  as $key_at => $Цена)
 		{
-			$Тип_цены ="'".$key_at."'";					
-			$sql_price .= "INSERT INTO `a_price` (`Связь товар`,`Тип цены`,`Цена`) VALUES ($Название,$Тип_цены,$Цена);";	
+			$Тип_цены ="'".$key_at."'";
+			$sql_proverka_price = "SELECT * FROM `a_price` WHERE `Связь товар` = $Название and 
+			`Тип цены` =  $Тип_цены and `Цена` = $Цена;";// SQL запрос на проверку наличия в БД	
+			$sql_rez_prov_price = $mysqli->query($sql_proverka_price);
+			if ($sql_rez_prov_price->num_rows==0)
+			{		
+			$sql_price .= "INSERT INTO `a_price` (`Связь товар`,`Тип цены`,`Цена`) VALUES ($Название,$Тип_цены,$Цена);";
+			}else
+			{
+				echo "Товар с такой ценой в БД существует \n";
+			}	
 		}					
 	}	
 	var_dump($mysqli->multi_query($sql_prod.$sql_prop.$sql_price));
@@ -186,7 +210,7 @@ importXml($p);
 ?>
 <br/>
 <?php
-$id_cat = 1;
+$id_cat = 2;
 $p = "D:\Program Files\OSPanel\domains\\test.ru\PHP_project";
 function exportXml($a, $b)
 {
@@ -194,7 +218,8 @@ function exportXml($a, $b)
 	// Таблица Свойства 	
 	$sql_prop = "SELECT * FROM `a_property` WHERE `id_cat` = $b;";	
 	$sql_rez_prop = $mysqli->query($sql_prop);	
-	var_dump($Table_prop = $sql_rez_prop->fetch_all());	
+	$Table_prop = $sql_rez_prop->fetch_all();
+	//var_dump($Table_prop);	
 	// Таблица Продуктов
 	foreach ($Table_prop as $key => $prop)
 	{
@@ -202,7 +227,7 @@ function exportXml($a, $b)
 		$sql_rez_prod = $mysqli->query($sql_prod);
 		$Table_prod[$key] = $sql_rez_prod->fetch_assoc()["Код"];
 	}	
-	var_dump($Table_prod);
+	//var_dump($Table_prod);
 	// Таблица Цены
 	foreach ($Table_prop as $key => $prop)
 	{
@@ -210,12 +235,12 @@ function exportXml($a, $b)
 		$sql_rez_price = $mysqli->query($sql_price);
 		$Table_price[$key] = $sql_rez_price->fetch_all();
 	}	
-	var_dump($Table_price);
+	//var_dump($Table_price);
 	// Таблица категории
 	$sql_cat = "SELECT * FROM `a_category`;";
 	$sql_rez_cat = $mysqli->query($sql_cat);
-	$Table_cat = $sql_rez_cat->fetch_assoc();
-	var_dump($Table_cat);
+	$Table_cat = $sql_rez_cat->fetch_all();
+	//var_dump($Table_cat);
 	// Создание xml
 	$xml = new DomDocument("1.0","utf-8");
 	$xml_Товары = $xml->appendChild($xml->createElement("Товары"));
@@ -231,17 +256,27 @@ function exportXml($a, $b)
 			$xml_Цена->appendChild($xml->createTextNode($price[2]));	
 		}		
 		$xml_Свойства = $xml_Товар->appendChild($xml->createElement("Свойства"));
-		$xml_Плотность = $xml_Свойства->appendChild($xml->createElement("Плотность"));
-		$xml_Белизна = $xml_Свойства->appendChild($xml->createElement("Белизна"));
-		$xml_Белизна->setAttribute("ЕдИзм","%");
-		$str_prop = explode(" ",$prop[1]);// разбиваем строку свойства на массив		
-		$xml_Плотность->appendChild($xml->createTextNode($str_prop[2]));
-		$xml_Белизна->appendChild($xml->createTextNode($str_prop[5]));
+		$str_prop = explode(" ",$prop[1]);// разбиваем строку свойства на массив
+		unset($str_prop[count($str_prop)-1]); //удаляем в конце ''		
+		$i=0;$j=1;
+		foreach ($str_prop  as $key => $value)
+		{				
+			if($key == $i*3)
+			{
+				$xml_Св = $xml_Свойства->appendChild($xml->createElement($value));				
+				$i++;				
+				//$xml_Св_2->setAttribute("ЕдИзм","%");
+			}
+			if($key == $j*3-1)
+			{				
+				$xml_Св->appendChild($xml->createTextNode($value));
+				$j++;
+			}
+		}
 		$xml_Разделы = $xml_Товар->appendChild($xml->createElement("Разделы"));
 		$xml_Раздел = $xml_Разделы->appendChild($xml->createElement("Раздел"));
-		$xml_Раздел->appendChild($xml->createTextNode($Table_cat["Название"]));
-	}
-	//$name = $xml_products->setAttribute("Название =",$prod_val[0]);
+		$xml_Раздел->appendChild($xml->createTextNode($Table_cat[(int)$b-1][1]));
+	}	
 	$xml->save($a."\my_xml.xml");
 }
 exportXml($p,$id_cat);
