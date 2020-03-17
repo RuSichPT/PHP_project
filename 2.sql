@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Мар 09 2020 г., 11:15
+-- Время создания: Мар 17 2020 г., 16:15
 -- Версия сервера: 5.7.25-log
 -- Версия PHP: 7.1.32
 
@@ -30,8 +30,20 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `a_category` (
   `id` int(11) NOT NULL,
-  `Название` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Cod` int(11) NOT NULL,
+  `Name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `id_parent` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `a_connection`
+--
+
+CREATE TABLE `a_connection` (
+  `Name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id_cat` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -41,9 +53,9 @@ CREATE TABLE `a_category` (
 --
 
 CREATE TABLE `a_price` (
-  `Связь товар` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Тип цены` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Цена` decimal(10,2) NOT NULL
+  `id_product` int(11) NOT NULL,
+  `Type price` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Price` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -54,8 +66,8 @@ CREATE TABLE `a_price` (
 
 CREATE TABLE `a_product` (
   `id` int(11) NOT NULL,
-  `Код` int(11) NOT NULL,
-  `Название` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
+  `Cod` int(11) NOT NULL,
+  `Name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -65,9 +77,8 @@ CREATE TABLE `a_product` (
 --
 
 CREATE TABLE `a_property` (
-  `Товар` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `Значение свойства` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `id_cat` int(11) NOT NULL
+  `Product` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Property value` text COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -81,10 +92,16 @@ ALTER TABLE `a_category`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Индексы таблицы `a_connection`
+--
+ALTER TABLE `a_connection`
+  ADD KEY `id_cat` (`id_cat`);
+
+--
 -- Индексы таблицы `a_price`
 --
 ALTER TABLE `a_price`
-  ADD KEY `Связь товар` (`Связь товар`);
+  ADD KEY `id_product` (`id_product`) USING BTREE;
 
 --
 -- Индексы таблицы `a_product`
@@ -96,8 +113,7 @@ ALTER TABLE `a_product`
 -- Индексы таблицы `a_property`
 --
 ALTER TABLE `a_property`
-  ADD KEY `id_cat` (`id_cat`) USING BTREE,
-  ADD KEY `Товар` (`Товар`);
+  ADD KEY `Product` (`Product`) USING BTREE;
 
 --
 -- AUTO_INCREMENT для сохранённых таблиц
@@ -120,16 +136,16 @@ ALTER TABLE `a_product`
 --
 
 --
+-- Ограничения внешнего ключа таблицы `a_connection`
+--
+ALTER TABLE `a_connection`
+  ADD CONSTRAINT `a_connection_ibfk_2` FOREIGN KEY (`id_cat`) REFERENCES `a_category` (`id`);
+
+--
 -- Ограничения внешнего ключа таблицы `a_price`
 --
 ALTER TABLE `a_price`
-  ADD CONSTRAINT `a_price_ibfk_1` FOREIGN KEY (`Связь товар`) REFERENCES `a_property` (`Товар`);
-
---
--- Ограничения внешнего ключа таблицы `a_property`
---
-ALTER TABLE `a_property`
-  ADD CONSTRAINT `a_property_ibfk_1` FOREIGN KEY (`id_cat`) REFERENCES `a_category` (`id`);
+  ADD CONSTRAINT `a_price_ibfk_1` FOREIGN KEY (`id_product`) REFERENCES `a_product` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
