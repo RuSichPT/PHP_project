@@ -293,8 +293,13 @@ function exportXml($a, $b)
 	$mysqli = new mysqli('127.0.0.1', 'root', '', 'test_samson');
 	// Таблица Категорий
 	$b = (int)$b;	
-	$sql_сat = "SELECT * FROM `a_category` WHERE `Cod` = $b;";	
-	$sql_rez_cat = $mysqli->query($sql_сat);	
+	$sql_сat = "SELECT * FROM `a_category` WHERE `Cod` = $b;";
+	$sql_rez_cat = $mysqli->query($sql_сat);
+	if ($sql_rez_cat->num_rows==0)
+	{
+		echo "Такой код - $b в БД отсутствует";
+		return false;
+	}
 	$Table_cat[0] = $sql_rez_cat->fetch_assoc();
 	$i=0;
 	while ($Table_cat[$i]["id_parent"]!=0 )	
