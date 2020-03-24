@@ -34,7 +34,6 @@ class newBase
     public function setValue($value)
     {
         $this->value = $value;
-        return 'sdf';
     }
     /**
      * @return string
